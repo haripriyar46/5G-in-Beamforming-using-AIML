@@ -1,0 +1,596 @@
+In 5G, everything is software controlled. We don’t use big hardware machines like in old networks. This makes the network more flexible and smarter.
+
+Now, when a user wants to use the internet or make a call, the system needs to send signals to their phone. But instead of sending signals in all directions, we find out where the user is and send the signal only in that direction. This is called beamforming – like focusing a flashlight instead of lighting up the whole room.
+
+To do this smartly, we use a technique called ray tracing. It helps us understand how signals travel through the environment – some signals come straight to the user, and some bounce off buildings or walls.
+
+In our project, we keep it simple and only consider two signals:
+
+1. One that comes directly to the user (line of sight).
+
+2. One that comes after bouncing off something (reflected ray).
+
+We then make a model based on these two signals to understand how they combine and reach the user’s phone. This helps improve the quality of the signal and makes communication faster and clearer.
+
+How We Generated the Data:
+
+We used a software tool called RCOM to simulate how 5G signals behave in a real-world setup.
+
+To make it realistic, we made a few assumptions:
+
+1.Urban Outdoor Terrain
+We imagined that the users are in a city environment, with buildings around – just like how it would be in real life.
+
+2.Frequency Band: 28 MHz
+This is the frequency at which we are sending our 5G signals. It’s commonly used in 5G, especially for fast data transmission.
+
+3.Base Station Details
+- We used 1 base station(like a tower sending signals).
+- It has a special type of antenna called Uniform Linear Array (ULA) with 32 antenna elements.
+- This helps the base station to form narrow beams and send signals exactly in the direction of each user.
+
+4.User Equipment (UE)
+- We considered 100 users to make the simulation close to real life.
+- Each user has a simple antenna called a half-wave dipole antenna (a basic antenna type).
+- The antenna is placed at random angles – 0°, 30°, 60°, 90° – because in real life, people hold their phones in different directions.
+
+This randomness helps us test the system in different real-time situations and see how the signal behaves when phones are tilted or rotated.
+
+How We Send the Signal to the User:
+
+To send data to the user’s phone (User Equipment or UE), I need to know two main things:
+
+1. Where the user is (UE position)  
+2. What the environment is like – Are there buildings? Are there chances of signal reflection? How much signal gets lost?
+
+Understanding the Environment:
+When we send a signal:
+- Some of it reaches the user directly.
+- Some of it bounces off buildings (reflected).
+- Due to this, the signal may become weaker or change its timing and phase.
+
+This affects the quality of what the user receives. So we must be smart and send the signal in a way that overcomes these problems.
+
+Step 1: Sending a Pilot Signal
+When we are starting for the first time, the system (RNC) sends a pilot signal – which is just a test signal.
+
+This helps us measure:
+- How much signal is getting lost (path loss)
+- How the signal is changing in the environment (reflections, delays, phase shift)
+
+Step 2: Calculating Beamforming Weights
+Once we get the results from the pilot signal, we analyze that data.
+
+From that, we calculate beamforming weights – this is like figuring out the best angle and strength to send the next signal so that the user gets it clearly.
+
+Step 3: Sending the Actual Signal
+Now, using these weights, we send the actual data signal.
+
+This second signal is now adjusted perfectly for that user's location and environment, so the user gets a strong and clear connection.
+
+Summary:
+- First, we test the environment with a pilot signal.
+- Then, we learn how to adjust our beam.
+- Finally, we send the real data with optimized direction and strength.
+
+This is the process we use to set up beamforming and make sure the signal reaches the user in the best possible way.
+
+
+Why We Calculate Beamforming Weights
+Beamforming weights help us decide how much signal to send from each antenna element and in which direction, so that all signals combine perfectly at the user’s location.
+
+To calculate these weights, we first need information like:
+-User location
+-Path loss
+-Channel conditions (how the signal behaves in the environment)
+
+This information is obtained through the pilot signal we send at the beginning.
+
+What Do We Get from Beamforming Techniques?
+Based on the beamforming technique we choose, we get:
+- A set of weights (one for each antenna element)
+- A signal that is strong, has less interference, and is optimized for the user
+
+Now let's look at the three techniques, in very simple terms:
+
+Maximum Ratio Combining (MRC) – Focus on Signal Strength
+
+- It gives maximum power to the direction where the user is.
+- All antennas are tuned to send signals that add up at the user with maximum strength.
+- Very simple and good for low interference situations.
+
+Good for: Maximizing signal power  
+Not great at: Handling interference from others
+
+Zero-Forcing (ZF) – Focus on Eliminating Interference
+
+- Tries to completely cancel out interference from other users.
+- Adjusts the beamforming weights in such a way that interference becomes zero.
+- But sometimes it also reduces the main signal power.
+
+Good for: Multi-user setups with high interference  
+Not great at: Weak signal conditions
+
+Minimum Mean Square Error (MMSE) – Balance Between Power and Interference
+
+- A smarter approach that balances both:
+  - Keeps signal strength as high as possible
+  - Reduces interference as much as possible
+- It finds the optimal trade-off between MRC and ZF
+
+Good for: Real-world conditions (signal + interference mix)  
+Often preferred in practice
+
+Summary (Viva-Friendly):
+
+“We use pilot signals to learn about the user's location and signal behavior. Then we calculate beamforming weights using techniques like MRC (for strength), ZF (for interference removal), or MMSE (for balance). These weights help us send a strong, clear signal to the user with less disturbance.”
+
+Our Idea Behind Beamforming Weight Calculation
+
+Each beamforming technique (like MRC, ZF, MMSE) comes with its own advantages and drawbacks especially when it comes to noise.
+
+In some techniques, when we apply very large weights, not only the signal but even the noise gets amplified. This can make the received signal unclear or weak.
+
+Why We Use MRC (Maximum Ratio Combining)
+
+To handle this problem, we use MRC – Maximum Ratio Combining.  
+(Sometimes mistakenly called *minimum* ratio, but it's actually *maximum* ratio of signal to noise.)
+
+- MRC **focuses on maximizing the useful signal**.
+- It gives more weight to the **stronger and cleaner signals**, while naturally reducing the effect of noise.
+- This helps in creating a **more reliable and strong beam**, especially when the number of users or antennas increases (like in massive MIMO).
+
+So, in our project, we are using this MRC method to calculate the beamforming weights.
+
+How We Use These Weights
+
+Once we have the weights:
+1. We feed them into the antenna system.
+2. The antenna system uses these weights to form a directional beam.
+3. This beam focuses the signal exactly towards the user's location.
+
+Data Generation Step
+
+To simulate and test this, we are using RCOM to:
+- Create a realistic environment (urban, users, base station).
+- Generate datasets** of how the signal behaves under different conditions.
+- Apply the beamforming weights and observe the resulting signal quality.
+
+This is the core part of our project: generating beamformed signal data using MRC weights.
+
+What is REMCOM InSite Wireless 3D Ray Tracing?
+
+- REMCOM InSite is a real-world simulation software.
+- It is like a digital environment built using real-world data.  
+- We place this tool near the antenna or base station in a real setup.
+- It uses empirical (real-measured) data to create a 3D wireless environment.
+
+In our project, we use this tool to simulate the signal behavior at:
+- 28 MHz frequency
+- 100 users
+- Urban outdoor terrain
+
+Parameters Used for Simulation
+
+We input many parameters (as shown in the figure in our PDF), such as:
+- Base station location
+- User locations
+- Environment setup
+- Antenna array settings, etc.
+
+> Although base stations usually have multiple antennas (an array), for simplicity in our project, we have considered just one antenna.
+
+This simulation helps us create a dataset showing how signals behave in that setup.
+
+Channel Magnitude Response
+
+From the simulated data, we have also plotted the channel magnitude response.
+
+- It shows how the signal strength varies between different antennas and users.
+- In the PDF figure, this is shown using green and blue lines.
+
+AI-Based Beamforming Weight Prediction (Objective 2)
+
+Traditionally, beamforming weights are manually calculated based on formulas. But this has two issues:
+- It’s time-consuming.
+- It may not be very accurate for real-time changing environments.
+
+So, we use Artificial Intelligence (AI) to solve this:
+
+1. 📶 We send a pilot signal** from the antenna.
+2. 🧠 The signal received from the user is sent to a **server near the base station or cloud**.
+3. 🧮 Instead of manually calculating, this data is sent to a **pre-trained AI model**.
+4. 🔁 The AI model uses previous learning and **predicts the best beamforming weights** instantly.
+
+This makes the system:
+- ✅ **Faster**
+- ✅ **Smarter**
+- ✅ **More adaptable** to different scenarios
+
+---
+
+✅ **In Simple Words:**
+> "We used a tool called REMCOM InSite to create a realistic 3D environment and generate signal data. Then, instead of manually calculating beamforming weights, we trained an AI model that learns from different scenarios and predicts the best weights automatically. This makes our system ready for real-time 5G beamforming."
+
+Perfect! Here's a **very simple explanation** of that whole part, just like you'd explain to an examiner:
+
+---
+
+### ✅ Why do we need an AI model?
+To send signal to a user properly using beamforming, we need to **calculate beamforming weights**. These weights depend on the user's position and the environment. But calculating them manually every time is slow and not always accurate. So instead, we use **AI to predict** those weights quickly and smartly.
+
+---
+
+### ✅ What kind of AI model are we using?
+
+There are 2 types of learning:
+- **Supervised Learning** – This is what we use.  
+  We give the model some **input data (parameters)** and the **expected output (beamforming weights)** so it can learn.
+- **Unsupervised Learning** – It's more complicated and not used here.
+
+So, in supervised learning, once we train the model with many examples, it will **predict the weights** for new users just by looking at the current parameters.
+
+---
+
+### ✅ Which AI models did we choose?
+We picked two models from existing research:
+1. **RNN (Recurrent Neural Network)** –  
+   Good when data is sequential or has multiple features over time.  
+   Since we have **32 antennas** and **64 parameters**, this works well.
+2. **SVR (Support Vector Regression)** –  
+   A simpler model for predicting numerical values.  
+
+Both models are trained using the **simulation data** we created using REMCOM.
+
+---
+
+### ✅ What are these models doing?
+
+- They learn the **relationship between input parameters** (like user position, angles, power, distance, etc.)  
+  and the **output beamforming weights** (real and imaginary parts).
+- Once trained, we can just give the input parameters, and the model will **predict the best weights**.
+- These predicted weights are then **sent to the antenna system** to form a beam towards the user.
+
+---
+
+Got it, Sheethal! Here's everything rewritten in **very simple words**, like how you would explain it in a viva:
+
+---
+
+### 🧠 What We Did
+
+- We used **AI models** called **RNN** and **SVR** to predict some values.
+- These values are **real and imaginary parts** of beamforming weights.
+- We give these predicted values to an **antenna**, and the antenna uses them to **create beams** for users.
+
+---
+
+### 📊 Data Details
+
+- We assumed **each user** can have **up to 10 paths** (signals can come from different directions).
+- We created data for **4500 users**.
+- For each user, we calculated the **real** and **imaginary** values.
+- These are the values that the antenna needs to form correct beams.
+
+---
+
+### 📁 Folder Structure
+
+- Everything is kept neatly in folders:
+  - `src/` – main code files
+  - `data_set/` – generated data
+  - `output/` – graphs and results
+  - `temp/` – saved models
+
+---
+
+### 🧰 Tools Used
+
+- We used Python and some important libraries:
+  - `scikit-learn` – for SVR
+  - `keras` – for RNN
+  - `pandas`, `numpy`, `h5py` – for handling data
+- All these were installed in a **virtual environment**.
+
+---
+
+### ▶️ How to Run
+
+- We use this command:
+  ```
+  ./main.py -a train -m nn
+  ```
+  - `-a train` means we want to train
+  - `-m nn` means we are using the RNN model
+- Training takes time because we don’t use a GPU.
+
+---
+
+### 🧪 What the Code Does
+
+- First, it **generates data** for 5 users (for testing).
+- We assume the model is already trained and now we are just **testing it**.
+- It **calls different functions** based on what option we give (train, test, etc.).
+- We use a file called `data_insights.py` to understand the data (like distance, power, angle values).
+
+---
+
+### 📉 Why We Normalize
+
+- The input values have different ranges.
+- So, we **normalize** them (make them similar) before giving them to the AI model.
+- This is done in a function called **prepare_data()**.
+
+---
+
+### 🧠 How Training Works (RNN)
+
+- We **split the data**:
+  - 80% for training
+  - 20% for testing
+- The model goes through the data **100 times** (this is called **epochs**).
+- Inside the RNN:
+  - It has **64 layers** with `relu` activation
+  - Final layer has **linear activation**
+- It keeps checking:
+  - What is the **actual value**
+  - What is the **predicted value**
+  - It calculates the **error (MSE)** and improves after every round
+
+---
+
+### 💾 After Training
+
+- The trained model is **saved in the temp folder**.
+- We save both the **real part** and **imaginary part** separately.
+
+---
+
+### ✅ In Short
+
+> "We used AI models to learn how to predict values needed for antennas to form beams. We gave the model simulated data, trained it, and tested it. The final model gives real and imaginary weights that help the antenna system work properly."
+
+---
+
+Sure Sheethal! Here's a **very simple and clear explanation** of what you've written — perfect for explaining to your examiner in a confident and easy way:
+
+---
+
+### 🧠 `train_and_evaluate_nn` – What it does:
+
+1. **Data Split**:  
+   We split our data into two parts —  
+   - **80% for training**,  
+   - **20% for testing**.  
+   This helps us train better and reduce prediction errors.
+
+2. **Loss Calculation**:  
+   After training, we check how well the model is performing by calculating **loss** (error between actual and predicted values).
+
+3. **Model Creation**:  
+   - There's a function called **`create_rnn_network()`**.  
+   - We give it the **input shape** and **output shape** (based on our data).
+
+---
+
+### ⚙️ How the RNN Works:
+
+- The model has **many layers and nodes**.
+- Each layer has something called an **activation function** (like ‘ReLU’ or ‘Linear’) that helps in learning.
+- Data goes through all these layers and gets processed.
+- At the end, we get two outputs:  
+  - One is the **real part**,  
+  - Another is the **imaginary part** (of beamforming weight).
+
+- We used **64 layers** with **ReLU** activation.  
+- The **final layer** uses **Linear activation** to get the output.
+
+---
+
+### 📉 How It Learns (Training):
+
+- At each layer, the model:
+  - Predicts the value,
+  - Compares it with the actual value,
+  - Calculates the error (**MSE – Mean Squared Error**),
+  - Tries to improve by updating weights.
+
+- We run this process for **100 iterations**, called **epochs**.
+
+- After training, the model is saved inside the **`temp/` folder**, separately for real and imaginary parts.
+
+---
+
+### ✅ How to Run It
+
+**To train the model**, we run:  
+```
+./main.py -a train -m nn
+```
+
+- `-a train`: means we want to **train**  
+- `-m nn`: means we are using the **neural network model**
+
+---
+
+### 🔎 Testing the Model
+
+**To test the model**, we run:  
+```
+./main.py -a test -m nn
+```
+
+- If we want to test for a specific number of users (e.g. 5), we change the variable called **`NUM_TEST_USERS`** in the code.
+
+- It gives **real** and **imaginary** weights for each user.
+
+---
+
+### 📊 Comparing Models
+
+- If we run both NN and SVR, it will compare both.
+- It shows results in **output folder → model_comparison**.
+- You’ll see MSE for:
+  - **Real weights** – almost same in both
+  - **Imaginary weights** – NN gives better accuracy than SVR
+
+---
+
+### 🖥️ GUI Option (No Coding Needed)
+
+- We also created a **GUI** (Graphical User Interface).
+- In GUI, we can:
+  - Select **train or test** as the action,
+  - Choose **NN or SVR** as the model,
+  - Click **Perform Action**,
+  - Even generate **data insights** (like min/max power, angles, etc.).
+
+---
+
+### 📌 In Summary (What to Say in Viva)
+
+> “We trained an RNN model to predict beamforming weights (real and imaginary). The model is trained for 100 epochs. After training, it is saved in a folder and we can test it later. We also compared it with SVR, and saw that RNN performs better. Everything can be done either using code or with a GUI.”
+
+---
+
+Let me know if you want me to help you create quick **one-liner answers** for viva questions too!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Sure Sheethal! Here's a **clean and simple 5-paragraph explanation** of your project that you can confidently explain to your professor:
+
+---
+
+**1. Project Overview:**  
+In this project, we worked on **beamforming in 5G wireless communication systems**. We used a tool called **REMCOM InSite Wireless** to simulate real-world 3D environments and generate data like signal paths, angles, distances, and powers for users. The main goal of the project is to use **AI models (RNN and SVR)** to predict the **beamforming weights**—these weights help antennas focus their signals better toward users, which improves network performance.
+
+---
+
+**2. Data Preparation and Simulation:**  
+We considered a maximum of **10 signal paths per user**, and generated data for **4500 users** using the simulator. For each user, we calculated the **real and imaginary parts** of the beamforming weights, which are the key values the antenna system uses. This simulated data is stored in folders and is then used to train and test our models. We also analyzed the dataset using a file called `data_insights.py`, which gives useful statistics like minimum/maximum distance, power, and angle values.
+
+---
+
+**3. AI Models and Training:**  
+We used two machine learning models: **RNN (Recurrent Neural Network)** and **SVR (Support Vector Regressor)**. Most of our focus was on training the RNN model. The data was normalized (scaled) before training. We split the data into **80% for training** and **20% for testing**. The RNN model has **64 layers** with **ReLU activation functions**, and a final layer with a **Linear activation** to give the final output. The model was trained for **100 epochs** and saved in a temporary folder once completed.
+
+---
+
+**4. Testing and Comparison:**  
+After training, we tested the model using different numbers of users. The model outputs real and imaginary weights for each user. We also compared the performance of the RNN with the SVR model using **Mean Squared Error (MSE)**. The results showed that the **RNN gave more accurate predictions**, especially for imaginary weights, while the SVR had a higher error. All results and comparison plots are saved in the **output folder**.
+
+---
+
+**5. GUI and Final Results:**  
+To make the project more user-friendly, we also built a **GUI (Graphical User Interface)**. Instead of using command-line code, users can simply choose between **train or test**, select the model (RNN or SVR), and click a button to perform the action. The GUI also allows generation of data insights. Overall, this project shows how AI can help improve 5G beamforming by predicting accurate antenna weights using simulated data and deep learning models.
+
+---
+
+Let me know if you'd like a shorter 2-paragraph summary or help preparing a slide for this!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Here is an explanation of the results in the three plots you provided:
+
+---
+
+**1. Model Comparison (MSE Plot):**  
+This plot compares the Mean Squared Error (MSE) of different models—SVR and Neural Network (NN)—for predicting the real and imaginary parts of beamforming weights. The x-axis shows the four categories: SVR Real, SVR Imag, NN Real, and NN Imag, while the y-axis shows the MSE values. The results indicate that the neural network performs significantly better, with much lower MSE values for both real and imaginary parts. In contrast, SVR has very high error—especially for the real component—indicating it’s not as effective in capturing the complex relationships in the data.
+
+---
+
+**2. Neural Network Weights Comparison Plot:**  
+This plot consists of two subplots. On the left, we see the comparison between the predicted and actual real weights per user (1 to 5). The predicted values closely follow a linear increasing pattern, while the actual values show a decreasing trend. This discrepancy suggests the model captures some trend but fails to align with the true pattern of real weights. The right subplot shows the comparison for imaginary weights. Interestingly, both actual and predicted values are extremely close to zero (in the range of \(10^{-8}\)), which implies the neural network was highly effective in modeling the imaginary component with very low error.
+
+---
+
+**3. SVR Weights Comparison Plot:**  
+Again, this figure is split into real and imaginary comparisons. The real part (left) exhibits the same behavior as in the neural network plot—actual values decrease while predicted values increase. However, the gap between predicted and actual values is larger compared to the neural network, indicating higher error. The imaginary part (right) has drastic fluctuations. The actual imaginary weights suddenly drop to around \(-3.5 \times 10^{34}\) and rise back, whereas the predicted values don’t capture this behavior properly and stay closer to zero. This large deviation is a major reason for the extremely high MSE observed in SVR Imag in the first plot.
+
+---
+
+**Conclusion from the Results:**  
+- The neural network model outperforms SVR in both real and imaginary weight prediction.
+- The NN's prediction of imaginary weights is especially accurate, resulting in negligible error.
+- The SVR model is not suitable for handling such complex-valued data, particularly when the imaginary part shows sharp variation.
+- From these visual and numerical comparisons, the neural network is the better choice for predicting beamforming weights in 5G systems.
+
+Would you like this explanation in a slide format too?
+
+
+
